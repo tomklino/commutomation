@@ -167,7 +167,7 @@ def handle_request(source="", dest="", arrival_date="", arrival_time=""):
 
     from_date = arrival_date
     from_time = (datetime.strptime(arrival_time, "%H%M") - timedelta(hours=1)).strftime("%H%M")
-    q = s.query("tel aviv savidor center", "hod hasharon sokolov", from_date, from_time)
+    q = s.query(source, dest, from_date, from_time)
 
     serializable_data = make_serializable(q)
 

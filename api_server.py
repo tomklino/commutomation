@@ -1,7 +1,14 @@
+import sys
+import os
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from train_planner import handle_request # This is the key line
+
+sys.path.insert(0, os.path.expanduser('.patched_modules/israel-rail-api'))
+from israelrailapi.stations import STATIONS
+
 
 # Create the Flask application instance
 app = Flask(__name__)
@@ -35,6 +42,16 @@ def find_route_api():
     except Exception as e:
         # A simple error handler for unexpected issues
         return jsonify({"error": str(e)}), 500
+
+@app.route('/stations', methods=['GET'])
+def get_stations():
+    """
+    Returns all the stations in english from the list in israel-rail-api module
+    """
+    lang =  request.args.get('lang', "Eng")
+
+    return [ STATIONS[station_id][lang] for station_id in STATIONS ]
+
 
 # Run the Flask app
 if __name__ == '__main__':
