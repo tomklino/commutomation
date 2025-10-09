@@ -9,7 +9,7 @@
         <div class="input-group">
           <label for="source">Source Station:</label>
           <div class="autocomplete-container">
-            <input 
+            <input
               id="source" 
               v-model="source" 
               @input="handleSourceInput"
@@ -88,7 +88,7 @@
             </div>
             
             <div class="train-box">
-              <h3>Later Train</h3>
+              <h3>Backup Train</h3>
               <p><strong>Departure:</strong> {{ formatDate(result.later_route.departure) }}</p>
               <p><strong>Arrival:</strong> {{ formatDate(result.later_route.arrival) }}</p>
               <p><strong>Train Info:</strong> {{ result.later_route.route_info }}</p>
