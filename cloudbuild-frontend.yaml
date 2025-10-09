@@ -1,0 +1,32 @@
+steps:
+  - name: 'node:${_NODE_VERSION}'
+    args:
+      - install
+    dir: frontend
+    id: Install_Dependencies
+    entrypoint: npm
+  - name: 'node:${_NODE_VERSION}'
+    args:
+      - build
+    dir: frontend
+    id: Build_Frontend
+    entrypoint: ./node_modules/.bin/vue-cli-service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - gsutil
+      - rsync
+      - '-r'
+      - '-x'
+      - index.html
+      - ./frontend/dist
+      - 'gs://${_GCS_BUCKET}/'
+    id: Sync_Static_Assets
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - gsutil
+      - cp
+      - ./frontend/dist/index.html
+      - 'gs://${_GCS_BUCKET}/index.html'
+    id: Upload_Index_Html
+options:
+  logging: CLOUD_LOGGING_ONLY
