@@ -73,12 +73,6 @@
       <div v-if="result && !loading" class="results-container">
         <h2>Optimal Route Found! 🎉</h2>
         <div class="result-card">
-          <div class="result-info">
-            <p><strong>Time Saved:</strong> {{ result.time_saved_minutes }} minutes</p>
-            <p><strong>Departure Gap:</strong> {{ result.departure_gap_minutes }} minutes</p>
-            <p><strong>Arrival Difference:</strong> {{ result.arrival_diff_minutes }} minutes</p>
-          </div>
-          
           <div class="train-details">
             <div class="train-box">
               <h3>First Train</h3>
