@@ -350,10 +350,72 @@ def find_optimal_departure_time_from_serialized(serialized_data, arrival_date, a
     
     return all_options
 
+def find_optimal_departure_time_from_serialized(serialized_data, arrival_date, arrival_time, min_departure_gap=5, max_arrival_diff=10):
+    """
+    Find a departure time such that a route departing at least min_departure_gap minutes later
+    will arrive no more than max_arrival_diff minutes later than the first route, and both routes
+    arrive by the specified arrival date and time.
+    """
+    # Create timezone and target arrival directly (don't call get_routes_data)
+    jerusalem_tz = pytz.timezone('Asia/Jerusalem')
+    target_arrival_naive = datetime.strptime(f"{arrival_date} {arrival_time}", "%Y-%m-%d %H%M")
+    target_arrival = jerusalem_tz.localize(target_arrival_naive)
+    
+    all_routes = filter_routes_by_arrival(serialized_data, jerusalem_tz, target_arrival)
+    
+    # Sort routes by departure time for optimization logic
+    all_routes.sort(key=lambda x: x['departure'])
+    
+    # Collect all possible options
+    all_options = []
+    
+    # Check each route as a potential first departure
+    for i, first_route in enumerate(all_routes):
+        first_departure = first_route['departure']
+        first_arrival = first_route['arrival']
+        
+        # Find routes that depart at least min_departure_gap minutes later
+        min_later_departure = first_departure + timedelta(minutes=min_departure_gap)
+        
+        for j, later_route in enumerate(all_routes[i+1:], i+1):
+            if later_route['departure'] >= min_later_departure:
+                later_arrival = later_route['arrival']
+                
+                # Check if arrival difference is within acceptable range
+                arrival_diff = later_arrival - first_arrival
+                if arrival_diff <= timedelta(minutes=max_arrival_diff):
+                    # Calculate time saved by taking the later route
+                    time_saved = later_route['departure'] - first_departure
+                    
+                    option = {
+                        'first_route': first_route,
+                        'later_route': later_route,
+                        'departure_gap_minutes': (later_route['departure'] - first_departure).total_seconds() / 60,
+                        'arrival_diff_minutes': arrival_diff.total_seconds() / 60,
+                        'time_saved_minutes': time_saved.total_seconds() / 60,
+                        'target_arrival': target_arrival
+                    }
+                    all_options.append(option)
+                else:
+                    # Since routes are sorted by departure time, if this one is too late,
+                    # all subsequent ones will be even later
+                    break
+    
+    # Sort options by arrival time of the first train
+    all_options.sort(key=lambda x: x['first_route']['arrival'])
+    
+    return all_options
+
 def handle_request(source="", dest="", arrival_date="", arrival_time=""):
     """Legacy handler for optimal departure time (for backward compatibility)"""
-    serializable_data, jerusalem_tz, target_arrival = get_routes_data(source, dest, arrival_date, arrival_time)
-    
+    s = israelrailapi.TrainSchedule()
+
+    from_date = arrival_date
+    from_time = (datetime.strptime(arrival_time, "%H%M") - timedelta(hours=1)).strftime("%H%M")
+    q = s.query(source, dest, from_date, from_time)
+
+    serializable_data = make_serializable(q)
+
     # Find optimal departure time using serialized data
     all_options = find_optimal_departure_time_from_serialized(serializable_data, arrival_date, arrival_time, max_arrival_diff=10)
     if all_options:
