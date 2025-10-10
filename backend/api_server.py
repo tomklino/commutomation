@@ -131,11 +131,19 @@ def find_all_routes():
 @app.route('/stations', methods=['GET'])
 def get_stations():
     """
-    Returns all the stations in english from the list in israel-rail-api module
+    Returns all the stations from the israel-rail-api module.
+    By default returns a list of station names in English.
+    If 'format=map' is provided, returns a mapping of station IDs to names.
     """
     lang = request.args.get('lang', "Eng")
-
-    return [ STATIONS[station_id][lang] for station_id in STATIONS ]
+    format_type = request.args.get('format', 'list')
+    
+    if format_type == 'map':
+        # Return as a mapping of ID to name
+        return {str(station_id): STATIONS[station_id][lang] for station_id in STATIONS}
+    else:
+        # Return as a list of names (default)
+        return [STATIONS[station_id][lang] for station_id in STATIONS]
 
 
 # Run the Flask app

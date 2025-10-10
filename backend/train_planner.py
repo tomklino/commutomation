@@ -126,6 +126,8 @@ def format_route_v1(route, route_id=None):
                 platform_number = None
                 departure_time = None
                 arrival_time = None
+                origin_station = None
+                destination_station = None
                 
                 # Try to get train_number from various possible locations
                 if isinstance(train, dict):
@@ -136,6 +138,15 @@ def format_route_v1(route, route_id=None):
                     platform_number = train.get('platform_number') or train.get('platformNumber') or train.get('platform')
                     if platform_number is None and 'data' in train:
                         platform_number = train['data'].get('platformNumber') or train['data'].get('platform')
+                    
+                    # Get station information
+                    origin_station = train.get('origin_station') or train.get('originStation')
+                    if origin_station is None and 'data' in train:
+                        origin_station = train['data'].get('orignStation') or train['data'].get('originStation') or train['data'].get('origin_station')
+                    
+                    destination_station = train.get('destination_station') or train.get('destinationStation')
+                    if destination_station is None and 'data' in train:
+                        destination_station = train['data'].get('destinationStation') or train['data'].get('destination_station')
                     
                     # Get departure and arrival times
                     departure_time = train.get('departure')
@@ -162,7 +173,9 @@ def format_route_v1(route, route_id=None):
                     'departure': departure_time,
                     'arrival': arrival_time,
                     'trainNumber': train_number,
-                    'platformNumber': platform_number
+                    'platformNumber': platform_number,
+                    'originStation': origin_station,
+                    'destinationStation': destination_station
                 }
                 formatted_trains.append(formatted_train)
                 
