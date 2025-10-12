@@ -244,7 +244,7 @@ def find_backup_routes_for_route(all_routes, primary_route_idx, primary_route, m
     logger.info(f"Found {len(backup_routes)} backup routes for route {primary_route.get('route_id', 'unknown')}")
     return backup_routes
 
-def find_all_routes_handler(source, dest, arrival_date, arrival_time, min_departure_gap=5, max_arrival_diff=10):
+def find_all_routes_handler(source, dest, arrival_date, arrival_time, min_departure_gap=5, max_arrival_diff=15):
     """
     Find all routes with backup options for each route.
     

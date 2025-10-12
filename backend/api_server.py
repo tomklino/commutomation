@@ -97,7 +97,7 @@ def find_all_routes():
         
         # Optional parameters with defaults
         min_departure_gap = int(request.args.get('min_departure_gap', 5))
-        max_arrival_diff = int(request.args.get('max_arrival_diff', 10))
+        max_arrival_diff = int(request.args.get('max_arrival_diff', 15))
 
         # Check for required parameters
         if not all([source, dest, arrival_date, arrival_time]):
