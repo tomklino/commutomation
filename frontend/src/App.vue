@@ -131,7 +131,7 @@
             >
               <div class="backup-main-info">
                 <span class="backup-time">{{ formatTime(getRouteById(backup.route_id).startTime) }}</span>
-                <span class="backup-delay">+{{ Math.round(backup.delayMinutes) }} min</span>
+                <span class="backup-delay">Arrives {{ Math.round(backup.delayMinutes) }} minutes later</span>
               </div>
               <div class="backup-platform" v-if="getFirstPlatform(backup.route_id)">
                 Platform {{ getFirstPlatform(backup.route_id) }}
