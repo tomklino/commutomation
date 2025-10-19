@@ -2,15 +2,29 @@ server {
     listen ${HTTP_PORT} default_server;
     server_name ${HOSTNAME};
 
-    location / {
+    location /api/ {
         if ($http_x_forwarded_proto != "https") {
             return 301 https://$host$request_uri;
         }
-        proxy_pass https://${HOSTNAME}:${HTTPS_PORT};
+        proxy_pass ${BACKEND_URL}/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        if ($http_x_forwarded_proto != "https") {
+            return 301 https://$host$request_uri;
+        }
+        root /mnt/gcs;
+        try_files $uri $uri/ /index.html;
+    }
+
+    error_page 404 /404.html;
+    location = /404.html {
+        root /usr/share/nginx/html;
+        internal;
     }
 }
 
