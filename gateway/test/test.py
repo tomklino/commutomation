@@ -62,6 +62,27 @@ class GatewayTestCase(unittest.TestCase):
         self.assertTrue('X-Real-IP' in response_headers or 'X-Real-Ip' in response_headers)
         self.assertIn('X-Forwarded-Proto', response_headers)
 
+    def test_x_forwarded_proto_no_redirect(self):
+        headers = {"X-Forwarded-Proto": "https"}
+        response = requests.get(
+            GATEWAY_URL + "/api/test/endpoint",
+            headers=headers,
+            allow_redirects=False
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get('service'), 'mock-backend')
+
+    def test_x_forwarded_proto_static_no_redirect(self):
+        headers = {"X-Forwarded-Proto": "https"}
+        response = requests.get(
+            GATEWAY_URL + "/index.html",
+            headers=headers,
+            allow_redirects=False
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Test Static Content", response.text)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
