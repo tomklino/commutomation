@@ -2,10 +2,11 @@ server {
     listen ${HTTP_PORT} default_server;
     server_name ${HOSTNAME};
 
+    if ($http_x_forwarded_proto != "https") {
+        return 301 https://$host$request_uri;
+    }
+
     location /api/ {
-        if ($http_x_forwarded_proto != "https") {
-            return 301 https://$host$request_uri;
-        }
         proxy_pass ${BACKEND_URL}/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -14,9 +15,6 @@ server {
     }
 
     location / {
-        if ($http_x_forwarded_proto != "https") {
-            return 301 https://$host$request_uri;
-        }
         root /mnt/gcs;
         try_files $uri $uri/ /index.html;
     }
