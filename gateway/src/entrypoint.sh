@@ -27,8 +27,16 @@ else
 fi
 
 echo "Generating nginx configuration..."
-export HOSTNAME HTTP_PORT HTTPS_PORT CERTS_PATH BACKEND_URL
-envsubst '${HOSTNAME} ${HTTP_PORT} ${HTTPS_PORT} ${CERTS_PATH} ${BACKEND_URL}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+
+if [ -n "$BACKEND_URL" ]; then
+    echo "Backend URL configured: $BACKEND_URL"
+    export HOSTNAME HTTP_PORT HTTPS_PORT CERTS_PATH BACKEND_URL
+    envsubst '${HOSTNAME} ${HTTP_PORT} ${HTTPS_PORT} ${CERTS_PATH} ${BACKEND_URL}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+else
+    echo "WARNING: BACKEND_URL not set, /api/ requests will not be proxied"
+    export HOSTNAME HTTP_PORT HTTPS_PORT CERTS_PATH
+    cat /etc/nginx/nginx.conf.template | sed '/location \/api\//,/^    }/d' | envsubst '${HOSTNAME} ${HTTP_PORT} ${HTTPS_PORT} ${CERTS_PATH}' > /etc/nginx/conf.d/default.conf
+fi
 
 if [ ! -f "$CERTS_PATH/cert.pem" ] || [ ! -f "$CERTS_PATH/key.pem" ]; then
     echo "WARNING: SSL certificates not found at $CERTS_PATH, generating self-signed certificate..."
