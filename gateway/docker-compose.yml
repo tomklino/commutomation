@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  mock-backend:
+    image: python:3.11-alpine
+    container_name: mock-backend
+    command: python /app/mock-backend.py
+    volumes:
+      - ./test/mock-backend.py:/app/mock-backend.py:ro
+    networks:
+      - gateway-test
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  gateway:
+    build:
+      context: ./src
+    container_name: gateway
+    environment:
+      HOSTNAME: "localhost"
+      HTTP_PORT: "80"
+      HTTPS_PORT: "443"
+      CERTS_PATH: "/etc/certs.d"
+      BACKEND_URL: "http://mock-backend:8080"
+    volumes:
+      - ./test/test-static:/mnt/gcs:ro
+    ports:
+      - "8000:80"
+      - "8443:443"
+    networks:
+      - gateway-test
+    depends_on:
+      mock-backend:
+        condition: service_healthy
+
+  test:
+    build:
+      context: ./test
+      dockerfile: Dockerfile.test
+    container_name: gateway-test
+    networks:
+      - gateway-test
+    depends_on:
+      - gateway
+
+networks:
+  gateway-test:
+    driver: bridge

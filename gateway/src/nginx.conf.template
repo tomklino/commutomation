@@ -1,0 +1,37 @@
+server {
+    listen ${HTTP_PORT} default_server;
+    server_name ${HOSTNAME};
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen ${HTTPS_PORT} ssl default_server;
+    server_name ${HOSTNAME};
+
+    ssl_certificate ${CERTS_PATH}/cert.pem;
+    ssl_certificate_key ${CERTS_PATH}/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location /api/ {
+        proxy_pass ${BACKEND_URL}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        root /mnt/gcs;
+        try_files $uri $uri/ /index.html;
+    }
+
+    error_page 404 /404.html;
+    location = /404.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+}
